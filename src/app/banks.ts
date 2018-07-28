@@ -6,7 +6,8 @@ import {AlertController} from "ionic-angular";
 
 export interface Bank {
   fetchData();
-  parseData(data: Document);
+  parseData(data: ElementCompact);
+  reset();
 }
 
 export class Currency {
@@ -93,5 +94,10 @@ export class KKTCMerkezBankProvider implements Bank {
       const currency = new Currency(label, value, buy, sell, forexBuy, forexSell);
       this.currencies.push(currency);
     }
+  }
+
+  reset() {
+    this.currencies = [];
+    this.failed = false;
   }
 }

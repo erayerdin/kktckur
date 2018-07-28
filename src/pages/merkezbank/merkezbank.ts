@@ -10,4 +10,9 @@ export class MerkezbankPage {
   currencies: Currency[];
 
   constructor(public navCtrl: NavController, private bank: KKTCMerkezBankProvider) {}
+
+  ionViewWillEnter() {
+    this.bank.reset();
+    this.bank.fetchData();
+  }
 }
