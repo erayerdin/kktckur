@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Merkez Bankası</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+  <ion-spinner class="overriding-spinner" *ngIf="bank.currencies.length === 0"></ion-spinner>
+
+  <ion-list>
+    <ion-item *ngFor="let currency of bank.currencies">
+      <ion-label>
+        <h2>{{ currency.value }} {{ currency.label }}</h2>
+        <h3><strong>Alış: </strong> {{currency.buy()}}</h3>
+        <h3><strong>Satış: </strong> {{currency.sell()}}</h3>
+        <h3><strong>Efektif Alış: </strong> {{currency.forexBuy()}}</h3>
+        <h3><strong>Efektif Satış: </strong> {{currency.forexSell()}}</h3>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>
