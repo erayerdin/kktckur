@@ -2,6 +2,7 @@ import {Injectable} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
 import {ElementCompact, xml2js} from "xml-js";
 import {normalizeRawText} from "./utils";
+import {AlertController} from "ionic-angular";
 
 export interface Bank {
   fetchData();
@@ -11,11 +12,6 @@ export interface Bank {
 export class Currency {
   label: string;
   value: number;
-
-  // private buyValue: number;
-  // private sellValue: number;
-  // private forexBuyValue: number;
-  // private forexSellValue: number;
 
   constructor(
     label: string,
@@ -50,10 +46,12 @@ export class Currency {
 export class KKTCMerkezBankProvider implements Bank {
   label: string = "KKTC Merkez Bankası";
   currencies: Currency[] = [];
+  failed: boolean;
 
   private url: string = "http://185.64.80.30/kur/gunluk.xml";
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, public alertCtrl: AlertController) {
+    this.failed = false;
     this.fetchData();
   }
 
@@ -64,11 +62,21 @@ export class KKTCMerkezBankProvider implements Bank {
       headers: headers
     };
     // @ts-ignore
-    this.http.get(this.url, options).subscribe((response) => {
-      console.log(response.headers);
-      const data = xml2js(response, {nativeType: true, compact: true});
-      this.parseData(data["KKTCMB_Doviz_Kurlari"]["Resmi_Kurlar"]["Resmi_Kur"]);
-    });
+    this.http.get(this.url, options).subscribe(
+      (response) => {
+        const data = xml2js(response, {nativeType: true, compact: true});
+        this.parseData(data["KKTCMB_Doviz_Kurlari"]["Resmi_Kurlar"]["Resmi_Kur"]);
+      },
+      (response) => {
+        const alert = this.alertCtrl.create({
+          title: "Bağlanılamadı.",
+          message: "Bağlantıda sorun oluştu. Lütfen daha sonra tekrar deneyin.",
+          buttons: ["Tamam"]
+        });
+        alert.present();
+        this.failed = true;
+      }
+    );
   }
 
   parseData(data: ElementCompact) {
