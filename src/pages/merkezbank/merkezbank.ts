@@ -1,18 +1,18 @@
 import {Component} from '@angular/core';
 import {NavController} from 'ionic-angular';
-import {Currency, KKTCMerkezBankProvider} from "../../app/banks";
+import {KKTCMerkezBankProviderService} from "../../app/services/bank";
 
 @Component({
   selector: 'page-merkezbank',
-  templateUrl: 'merkezbank.html'
+  templateUrl: 'merkezbank.html',
+  providers: [KKTCMerkezBankProviderService]
 })
 export class MerkezbankPage {
-  currencies: Currency[];
 
-  constructor(public navCtrl: NavController, private bank: KKTCMerkezBankProvider) {}
+  constructor(public navCtrl: NavController, protected bankService: KKTCMerkezBankProviderService) {}
 
-  ionViewWillEnter() {
-    this.bank.reset();
-    this.bank.fetchData();
+  ionViewDidEnter(): void {
+    this.bankService.reset();
+    this.bankService.fetchData();
   }
 }

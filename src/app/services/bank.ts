@@ -1,44 +1,10 @@
 import {Injectable} from "@angular/core";
 import {AlertController, LoadingController} from "ionic-angular";
-import {ElementCompact} from "xml-js";
+import {ElementCompact, xml2js} from "xml-js";
 import * as _ from "underscore";
-
-// export enum DataType {
-//   XML,
-//   JSON
-// }
-
-/**
- * All properties that is not intended to be searched through the XML should start with
- * an underscore so that parseElement function can filter what is in the XML and what is
- * not.
- */
-abstract class Data {
-  _computerReadableName: string
-  _humanReadableName: string
-  _buyExchangeRate: number
-  _sellExchangeRate: number
-  _effectiveBuyExchangeRate: number
-  _effectiveSellExchangeRate: number
-
-  constructor(element: ElementCompact) {
-    this.parseElement(element);
-  }
-
-  /**
-   * This function takes properties into consideration except it starts with underscore.
-   */
-  protected parseElement(element: ElementCompact): void {
-    const allProperties: string[] = Object.getOwnPropertyNames(this);
-    // @ts-ignore
-    const properties: string[] = _.reject(allProperties, (prop) => prop.charAt(0) === "_");
-
-    _.each(properties, (prop: string) => {
-      let val: string | number = element[prop]._text;
-      this[prop] = val;
-    });
-  };
-}
+import {HttpClient} from "@angular/common/http";
+import {parse, stringify} from "circular-json";
+import {normalizeRawText} from "../utils";
 
 abstract class Bank {
   label: string;
@@ -46,42 +12,76 @@ abstract class Bank {
   // dataType: DataType;
   url: string;
 
-  constructor(protected alertCtrl: AlertController, protected loadingCtrl: LoadingController) {}
+  constructor(protected httpClient: HttpClient, protected alertCtrl: AlertController, protected loadingCtrl: LoadingController) {}
 
   abstract fetchData();
-}
-
-////////////////////
-// KKTCMerkezBank //
-////////////////////
-export class KKTCMerkezBankData extends Data {
-  Birim: number
-  Sembol: string
-  Isim: string
-  Doviz_Alis: number
-  Doviz_Satis: number
-  Efektif_Alis: number
-  Efektif_Satis: number
-
-  protected parseElement(element: ElementCompact) {
-    super.parseElement(element);
-
-    this._humanReadableName = this["Isim"];
-    this._computerReadableName = this["Sembol"];
-    this._buyExchangeRate = this["Doviz_Alis"];
-    this._sellExchangeRate = this["Doviz_Satis"];
-    this._effectiveBuyExchangeRate = this["Efektif_Alis"];
-    this._effectiveSellExchangeRate = this["Efektif_Satis"];
-  }
+  abstract reset();
 }
 
 @Injectable()
-export class KKTCMerkezBank extends Bank {
+export class KKTCMerkezBankProviderService extends Bank {
   label = "KKTC Merkez Bankası";
-  data: KKTCMerkezBankData[];
+  data: {
+    Birim: number,
+    Sembol: string,
+    Isim: string,
+    Doviz_Alis: number,
+    Doviz_Satis: number,
+    Efektif_Alis: number,
+    Efektif_Satis
+  }[];
   url = "http://cors-anywhere.herokuapp.com/http://185.64.80.30/kur/gunluk.xml";
+  httpOptions: {} = {
+    responseType: "text"
+  };
+
+  constructor(protected httpClient: HttpClient, protected alertCtrl: AlertController,
+              protected loadingCtrl: LoadingController) {
+    super(httpClient, alertCtrl, loadingCtrl);
+  }
 
   fetchData() {
+    const loading = this.loadingCtrl.create({
+      content: "Veriler alınıyor..."
+    });
+    loading.present();
 
+    this.httpClient.get(this.url, this.httpOptions).subscribe(
+      (response: string) => {
+        const data: ElementCompact = xml2js(response, {nativeType: true, compact: true});
+        const focalData: ElementCompact[] = data["KKTCMB_Doviz_Kurlari"]["Resmi_Kurlar"]["Resmi_Kur"];
+
+        this.data = [];
+        _.each(focalData, (d) => {
+          let obj = {};
+          obj["Birim"] = d["Birim"]._text;
+          obj["Sembol"] = d["Sembol"]._text;
+          obj["Isim"] = normalizeRawText(d["Isim"]._text);
+          obj["Doviz_Alis"] = d["Doviz_Alis"]._text;
+          obj["Doviz_Satis"] = d["Doviz_Satis"]._text;
+          obj["Efektif_Alis"] = d["Efektif_Alis"]._text;
+          obj["Efektif_Satis"] = d["Efektif_Satis"]._text;
+          // @ts-ignore
+          this.data.push(obj);
+        });
+
+        loading.dismiss();
+      },
+      (response) => {
+        loading.dismiss();
+
+        const alert = this.alertCtrl.create({
+          title: "Bağlantı Sorunu",
+          message: `Verileri almak için "${this.label}" servisine bağlanılamadı. Daha sonra tekrar deneyin.`,
+          buttons: [{text:"Tamam"}]
+        });
+
+        alert.present();
+      }
+    );
+  }
+
+  reset() {
+    this.data = null;
   }
 }

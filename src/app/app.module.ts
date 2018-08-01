@@ -10,10 +10,10 @@ import {StatusBar} from '@ionic-native/status-bar';
 import {SplashScreen} from '@ionic-native/splash-screen';
 import {Network} from "@ionic-native/network";
 import {HttpClientModule} from "@angular/common/http";
-import {KKTCMerkezBankProvider} from "./banks";
 import {MerkezbankPage} from "../pages/merkezbank/merkezbank";
 import {TransformerPage} from "../pages/transformer/transformer";
 import {TitlifyPipe} from "./utils";
+import {KKTCMerkezBankProviderService} from "./services/bank";
 
 @NgModule({
   declarations: [
@@ -43,7 +43,7 @@ import {TitlifyPipe} from "./utils";
     StatusBar,
     SplashScreen,
     Network,
-    KKTCMerkezBankProvider,
+    KKTCMerkezBankProviderService,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

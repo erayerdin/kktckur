@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-navbar>
+  <ion-navbar color="primary">
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
@@ -7,23 +7,15 @@
   </ion-navbar>
 </ion-header>
 
-<ion-content>
-  <ion-spinner class="overriding-spinner" *ngIf="bank.currencies.length === 0 && bank.failed !== true"></ion-spinner>
+<ion-content padding>
+  <ion-card *ngFor="let data of bankService.data">
+    <ion-card-header>{{data.Birim}} {{data.Sembol}} ({{data.Isim}})</ion-card-header>
 
-  <ion-card *ngIf="bank.failed" class="card-ios-danger card-md-danger">
-    <ion-card-header><ion-icon name="warning"></ion-icon> Başarısız</ion-card-header>
-    <ion-card-content>Bağlantı sağlanamadı.</ion-card-content>
+    <ion-list>
+      <ion-item><span><strong>Alış:</strong> {{data.Doviz_Alis}}</span></ion-item>
+      <ion-item><span><strong>Satış:</strong> {{data.Doviz_Satis}}</span></ion-item>
+      <ion-item><span><strong>Efektif Alış:</strong> {{data.Efektif_Alis}}</span></ion-item>
+      <ion-item><span><strong>Efektif Satış:</strong> {{data.Efektif_Satis}}</span></ion-item>
+    </ion-list>
   </ion-card>
-
-  <ion-list>
-    <ion-item *ngFor="let currency of bank.currencies">
-      <ion-label>
-        <h2>{{ currency.value }} {{ currency.label }}</h2>
-        <h3><strong>Alış: </strong> {{currency.buy()}}</h3>
-        <h3><strong>Satış: </strong> {{currency.sell()}}</h3>
-        <h3><strong>Efektif Alış: </strong> {{currency.forexBuy()}}</h3>
-        <h3><strong>Efektif Satış: </strong> {{currency.forexSell()}}</h3>
-      </ion-label>
-    </ion-item>
-  </ion-list>
 </ion-content>
