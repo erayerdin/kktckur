@@ -2,13 +2,8 @@ import {Injectable} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
 import {ElementCompact, xml2js} from "xml-js";
 import {normalizeRawText} from "./utils";
-import {AlertController} from "ionic-angular";
-
-export interface Bank {
-  fetchData();
-  parseData(data: ElementCompact);
-  reset();
-}
+import {AlertController, LoadingController} from "ionic-angular";
+import {parse, stringify} from "circular-json";
 
 export class Currency {
   label: string;
@@ -43,18 +38,36 @@ export class Currency {
   }
 }
 
-@Injectable()
-export class KKTCMerkezBankProvider implements Bank {
-  label: string = "KKTC Merkez Bankası";
-  currencies: Currency[] = [];
+export abstract class Bank {
+  static label: string;
+  label: string;
+  http: HttpClient;
   failed: boolean;
 
-  private url: string = "http://185.64.80.30/kur/gunluk.xml";
+  abstract fetchData();
+  abstract parseData(data: ElementCompact);
+  abstract reset();
+}
 
-  constructor(private http: HttpClient, public alertCtrl: AlertController) {
+@Injectable()
+export class KKTCMerkezBankProvider extends Bank {
+  static label: string = "KKTC Merkez Bankası";
+  // label: string;
+  currencies: Currency[] = [];
+  // failed: boolean;
+
+  private url: string = "http://cors-anywhere.herokuapp.com/http://185.64.80.30/kur/gunluk.xml";
+
+  constructor(public http: HttpClient, public alertCtrl: AlertController) {
+    super();
     this.failed = false;
-    this.fetchData();
+    this.label = KKTCMerkezBankProvider.label;
+    // this.fetchData();
   }
+
+  toJSON() {
+    return {label: this.label, failed: this.failed, currencies: this.currencies, url: this.url};
+  } // Avoiding JSON.stringify method's circular structure error
 
   fetchData() {
     const headers = {};
@@ -99,5 +112,89 @@ export class KKTCMerkezBankProvider implements Bank {
   reset() {
     this.currencies = [];
     this.failed = false;
+  }
+}
+
+export enum RatioType {
+  BUY = "Alış",
+  SELL = "Satış",
+  FOREX_BUY = "Efektif Alış",
+  FOREX_SELL = "Efektif Satış"
+}
+
+@Injectable()
+export class BanksProvider {
+  bankProviders: Bank[];
+  selectedBank: Bank;
+  selectedCurrency: Currency;
+  ratioType: RatioType;
+
+  constructor(private alertCtrl: AlertController, private loadingCtrl: LoadingController, private KKTCMerkezBank: KKTCMerkezBankProvider) {
+    this.bankProviders = [this.KKTCMerkezBank];
+  }
+
+  fetchBankData() {
+    let loading = this.loadingCtrl.create({
+      content: "Veriler alınıyor..."
+    });
+    loading.present();
+
+    this.selectedBank.reset();
+    this.selectedBank.fetchData();
+
+    if (this.selectedBank.failed) {
+      let alert = this.alertCtrl.create({
+        title: "Bağlantı Sorunu",
+        message: "Bankaya bağlantı sağlanamadı."
+      });
+      alert.onDidDismiss(() => {
+        this.reset();
+      });
+      alert.present();
+    }
+
+    loading.dismiss();
+
+    loading = this.loadingCtrl.create({
+      content: "Kur bilgileri alınıyor...",
+      duration: 500
+    });
+    loading.present(); // doesn't get currencies immediately
+    this.ratioType = RatioType.BUY;
+  }
+
+  setCurrency() {
+    let loading = this.loadingCtrl.create({
+      content: "Kur bilgileri alınıyor...",
+      duration: 1000
+    });
+    loading.present();
+
+    this.ratioType = RatioType.BUY;
+  }
+
+  reset() {
+    let loading = this.loadingCtrl.create({
+      content: "Veriler sıfırlanıyor...",
+      duration: 500
+    });
+    loading.present();
+
+    this.selectedBank = null;
+  }
+}
+
+@Injectable()
+export class CurrencyCalculatorProvider {
+  formerValue: number;
+  latterValue: number;
+  ratio: number;
+
+  calculateLatter() {
+    this.latterValue = this.formerValue * this.ratio;
+  }
+
+  calculateFormer() {
+    this.formerValue = this.latterValue / this.ratio;
   }
 }

@@ -1,10 +1,12 @@
 import {Component, ViewChild} from '@angular/core';
-import {Nav, Platform} from 'ionic-angular';
+import {AlertController, Nav, Platform} from 'ionic-angular';
 import {StatusBar} from '@ionic-native/status-bar';
 import {SplashScreen} from '@ionic-native/splash-screen';
 
 import {HomePage} from '../pages/home/home';
 import {MerkezbankPage} from "../pages/merkezbank/merkezbank";
+import {TransformerPage} from "../pages/transformer/transformer";
+import {Network} from "@ionic-native/network";
 
 @Component({
   templateUrl: 'app.html'
@@ -21,7 +23,8 @@ export class MyApp {
 
   pages: Array<{title: string, component: any}>;
 
-  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen) {
+  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen,
+              private network: Network, private alertCtrl: AlertController) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -32,7 +35,7 @@ export class MyApp {
     ];
 
     this.toolsPages = [
-      {title: "Kur Dönüştürücü", component: null}, // todo add component
+      {title: "Kur Dönüştürücü", component: TransformerPage}, // todo add component
       {title: "Hakkında", component: null}, // todo add component
     ];
   }
@@ -43,6 +46,21 @@ export class MyApp {
       // Here you can do any higher level native things you might need.
       this.statusBar.styleDefault();
       this.splashScreen.hide();
+
+      this.subscribeToDisconnect();
+    });
+  }
+
+  subscribeToDisconnect() {
+    let disconnectSubscription = this.network.onDisconnect().subscribe(() => {
+      let alert = this.alertCtrl.create({
+        title: "Bağlanamadı.",
+        message: "İnterenete bağlantı sağlanamıyor.",
+        buttons: [{text: "Programı Kapat"}]
+      });
+
+      alert.onDidDismiss(() => this.platform.exitApp());
+      alert.present();
     });
   }
 

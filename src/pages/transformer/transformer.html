@@ -1,0 +1,65 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Kur Dönüştürücü</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <button ion-button color="danger" *ngIf="banksProvider.selectedBank" full (click)="banksProvider.reset()"><ion-icon name="backspace"></ion-icon> Sıfırla</button>
+
+  <!-- Bank -->
+  <ion-card class="card-ios-primary card-md-primary">
+    <ion-card-header><strong>Adım 1:</strong> Banka seçin.</ion-card-header>
+    <ion-card-content>
+      <ion-item class="item-ios-primary item-md-primary">
+        <ion-label style="color: #fff;">Banka</ion-label>
+        <ion-select placeholder="Banka seçiniz." [(ngModel)]="banksProvider.selectedBank" (ngModelChange)="banksProvider.fetchBankData()">
+          <ion-option *ngFor="let bank of banksProvider.bankProviders" [value]="bank">{{bank.label}}</ion-option>
+        </ion-select>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Currency -->
+  <ion-card *ngIf="banksProvider.selectedBank" class="card-ios-primary card-md-primary">
+    <ion-card-header><strong>Adım 2:</strong> Kur seçin.</ion-card-header>
+    <ion-card-content>
+      <ion-item class="item-ios-primary item-md-primary">
+        <ion-label style="color: #fff;">Kur</ion-label>
+        <ion-select placeholder="Kur seçiniz." [(ngModel)]="banksProvider.selectedCurrency" (ngModelChange)="banksProvider.setCurrency()">
+          <ion-option *ngFor="let currency of banksProvider.selectedBank.currencies" [value]="currency">{{currency.label}}</ion-option>
+        </ion-select>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="banksProvider.selectedCurrency" (ngModelChange)="changeCurrency()">
+    <ion-card-content>
+      <ion-item>
+        <ion-label>Tür</ion-label>
+        <ion-select placeholder="Tür seçiniz." [(ngModel)]="banksProvider.ratioType" (ngModelChange)="changeRatioType()">
+          <ion-option [value]="banksProvider.ratioType.BUY">Alış</ion-option>
+          <ion-option [value]="banksProvider.ratioType.SELL">Satış</ion-option>
+          <ion-option [value]="banksProvider.ratioType.FOREX_BUY">Efektif Alış</ion-option>
+          <ion-option [value]="banksProvider.ratioType.FOREX_SELL">Efektif Satış</ion-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-grid>
+        <ion-row text-center>
+          <ion-col col-4><ion-input (ngModel)="currencyCalculatorProvider.formerValue" (ionChange)="currencyCalculatorProvider.calculateLatter()"></ion-input></ion-col>
+          <ion-col col-4><button ion-button><ion-icon name="shuffle"></ion-icon></button></ion-col>
+          <ion-col><ion-input (ngModel)="currencyCalculatorProvider.latterValue" (ionChange)="currencyCalculatorProvider.calculateFormer()"></ion-input></ion-col>
+        </ion-row>
+        <ion-row text-center>
+          <ion-col col-4>Türk Lirası</ion-col>
+          <ion-col col-4></ion-col>
+          <ion-col col-4>{{banksProvider.selectedCurrency.label|titlify}}</ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

@@ -8,9 +8,12 @@ import {ListPage} from '../pages/list/list';
 
 import {StatusBar} from '@ionic-native/status-bar';
 import {SplashScreen} from '@ionic-native/splash-screen';
+import {Network} from "@ionic-native/network";
 import {HttpClientModule} from "@angular/common/http";
 import {KKTCMerkezBankProvider} from "./banks";
 import {MerkezbankPage} from "../pages/merkezbank/merkezbank";
+import {TransformerPage} from "../pages/transformer/transformer";
+import {TitlifyPipe} from "./utils";
 
 @NgModule({
   declarations: [
@@ -18,6 +21,10 @@ import {MerkezbankPage} from "../pages/merkezbank/merkezbank";
     HomePage,
     ListPage,
     MerkezbankPage,
+    TransformerPage,
+
+    // Pipes
+    TitlifyPipe,
   ],
   imports: [
     BrowserModule,
@@ -30,10 +37,12 @@ import {MerkezbankPage} from "../pages/merkezbank/merkezbank";
     HomePage,
     ListPage,
     MerkezbankPage,
+    TransformerPage,
   ],
   providers: [
     StatusBar,
     SplashScreen,
+    Network,
     KKTCMerkezBankProvider,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
