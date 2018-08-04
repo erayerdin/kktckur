@@ -7,15 +7,15 @@
 
   <ion-content>
     <ion-list no-lines>
-      <button menuClose ion-item (click)="openPage(mainPage)">{{ mainPage.title }}</button>
+      <button menuClose ion-item (click)="openPage(mainPage)" [id]="mainPage.cssId">{{ mainPage.title }}</button>
 
       <ion-list-header>Bankalar</ion-list-header>
-      <button menuClose ion-item *ngFor="let p of bankPages" (click)="openPage(p)">
+      <button menuClose ion-item *ngFor="let p of bankPages" (click)="openPage(p)" [id]="p.cssId">
         {{p.title}}
       </button>
 
       <ion-list-header menuClose>Araçlar</ion-list-header>
-      <button menuClose ion-item *ngFor="let p of toolsPages" (click)="openPage(p)">
+      <button menuClose ion-item *ngFor="let p of toolsPages" (click)="openPage(p)" [id]="p.cssId">
         {{p.title}}
       </button>
     </ion-list>

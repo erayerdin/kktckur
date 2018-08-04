@@ -9,13 +9,13 @@
 
 <ion-content padding>
   <ion-card *ngFor="let data of bankService.data">
-    <ion-card-header>{{data.Birim}} {{data.Sembol}} ({{data.Isim}})</ion-card-header>
+    <ion-card-header><strong>{{data.value}} {{data.computerReadableName}} ({{data.humanReadableName}})</strong></ion-card-header>
 
     <ion-list>
-      <ion-item><span><strong>Alış:</strong> {{data.Doviz_Alis}}</span></ion-item>
-      <ion-item><span><strong>Satış:</strong> {{data.Doviz_Satis}}</span></ion-item>
-      <ion-item><span><strong>Efektif Alış:</strong> {{data.Efektif_Alis}}</span></ion-item>
-      <ion-item><span><strong>Efektif Satış:</strong> {{data.Efektif_Satis}}</span></ion-item>
+      <ion-item><span><strong>Alış:</strong> {{data.ratios.buyRatio}}</span></ion-item>
+      <ion-item><span><strong>Satış:</strong> {{data.ratios.sellRatio}}</span></ion-item>
+      <ion-item><span><strong>Efektif Alış:</strong> {{data.ratios.effectiveBuyRatio}}</span></ion-item>
+      <ion-item><span><strong>Efektif Satış:</strong> {{data.ratios.effectiveSellRatio}}</span></ion-item>
     </ion-list>
   </ion-card>
 </ion-content>

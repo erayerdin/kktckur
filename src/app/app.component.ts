@@ -16,27 +16,27 @@ export class MyApp {
 
   rootPage: any = HomePage;
 
-  mainPage: {title: string, component:any};
-  bankPages: Array<{title: string, component:any}>;
-  toolsPages: Array<{title: string, component:any}>;
+  mainPage: {title: string, component:any, cssId: string};
+  bankPages: Array<{title: string, component:any, cssId: string}>;
+  toolsPages: Array<{title: string, component:any, cssId: string}>;
 
 
-  pages: Array<{title: string, component: any}>;
+  pages: Array<{title: string, component: any, cssId: string}>;
 
   constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen,
               private network: Network, private alertCtrl: AlertController) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
-    this.mainPage = {title: "Özet", component: HomePage};
+    this.mainPage = {title: "Özet", component: HomePage, cssId: "home"};
 
     this.bankPages = [
-      {title: "Merkez Bankası", component: MerkezbankPage}
+      {title: "Merkez Bankası", component: MerkezbankPage, cssId: "merkez-bank-page"}
     ];
 
     this.toolsPages = [
-      {title: "Kur Dönüştürücü", component: TransformerPage}, // todo add component
-      {title: "Hakkında", component: null}, // todo add component
+      {title: "Kur Dönüştürücü", component: TransformerPage, cssId: "transformer-page"},
+      {title: "Hakkında", component: null, cssId: "about-page"}, // todo add component
     ];
   }
 

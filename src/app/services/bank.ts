@@ -5,10 +5,11 @@ import * as _ from "underscore";
 import {HttpClient} from "@angular/common/http";
 import {parse, stringify} from "circular-json";
 import {normalizeRawText} from "../utils";
+import {Currency} from "./currency";
 
-abstract class Bank {
+export abstract class BankService {
   label: string;
-  data: string | {} | {}[];
+  data: Currency[];
   // dataType: DataType;
   url: string;
 
@@ -16,20 +17,20 @@ abstract class Bank {
 
   abstract fetchData();
   abstract reset();
+
+  toJSON() {
+    return {
+      label: this.label,
+      data: this.data,
+      url: this.url
+    }; // quick dirty fix for circular reference
+  }
 }
 
 @Injectable()
-export class KKTCMerkezBankProviderService extends Bank {
+export class KKTCMerkezBankProviderService extends BankService {
   label = "KKTC Merkez Bankası";
-  data: {
-    Birim: number,
-    Sembol: string,
-    Isim: string,
-    Doviz_Alis: number,
-    Doviz_Satis: number,
-    Efektif_Alis: number,
-    Efektif_Satis
-  }[];
+  public data: Currency[];
   url = "http://cors-anywhere.herokuapp.com/http://185.64.80.30/kur/gunluk.xml";
   httpOptions: {} = {
     responseType: "text"
@@ -53,15 +54,14 @@ export class KKTCMerkezBankProviderService extends Bank {
 
         this.data = [];
         _.each(focalData, (d) => {
-          let obj = {};
-          obj["Birim"] = d["Birim"]._text;
-          obj["Sembol"] = d["Sembol"]._text;
-          obj["Isim"] = normalizeRawText(d["Isim"]._text);
-          obj["Doviz_Alis"] = d["Doviz_Alis"]._text;
-          obj["Doviz_Satis"] = d["Doviz_Satis"]._text;
-          obj["Efektif_Alis"] = d["Efektif_Alis"]._text;
-          obj["Efektif_Satis"] = d["Efektif_Satis"]._text;
-          // @ts-ignore
+          let obj = new Currency();
+          obj.value = d["Birim"]._text;
+          obj.computerReadableName = d["Sembol"]._text;
+          obj.humanReadableName = normalizeRawText(d["Isim"]._text);
+          obj.ratios.buyRatio = d["Doviz_Alis"]._text;
+          obj.ratios.sellRatio = d["Doviz_Satis"]._text;
+          obj.ratios.effectiveBuyRatio = d["Efektif_Alis"]._text;
+          obj.ratios.effectiveSellRatio = d["Efektif_Satis"]._text;
           this.data.push(obj);
         });
 

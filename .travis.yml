@@ -1,0 +1,13 @@
+matrix:
+    include:
+    - language: node_js
+      node_js: 10.7.0
+      install:
+        - npm install
+        - npm install -g ionic cordova
+
+    - language: python
+      python: 3.6
+      install: pip install -r test.requirements.txt
+
+script: nosetests
